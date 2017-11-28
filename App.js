@@ -26,10 +26,10 @@ export default class App extends Component<{}> {
         {text: 'OK', onPress: () => console.log('OK Pressed')}
       ]
     )
-    const result = await Network.get(url)
+    const result = await Network.get('/v1/keyhome/config/countries')
     Alert.alert(
       'Response',
-      result.title,
+      result.data.join(' - '),
       [
         {text: 'OK', onPress: () => console.log('OK Pressed')}
       ]
