@@ -11,18 +11,6 @@ class Network {
 
   static async basicHeaders() {
     const headers = {};
-
-    headers['accept'] = 'application/vnd.keytrade.rn_poc.v1+json';
-    headers['content-type'] = 'application/json';
-
-    // TODO: Check if ios header is correct
-    headers['X-REMOTEAPP-NAME'] = Platform.OS === 'ios' ? 'IOS-PHONE' : 'ANDROID-PHONE';
-    headers['User-Argent'] = 'be.keytradebank.kbapp/0.1';
-
-    const token = await AsyncStorage.getItem('ACCESS_TOKEN');
-    if (token && token !== 'undefined') {
-      headers['x-authentication'] = token;
-    }
     return headers;
   }
 
