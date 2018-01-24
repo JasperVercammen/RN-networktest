@@ -1,33 +1,65 @@
 import React, { Component } from 'react';
-import { Platform, StyleSheet, Text, Alert, View, Button } from 'react-native';
+import { Platform, StyleSheet, Text, Alert, View, Button, FlatList } from 'react-native';
 import Network from './Network';
 
-const instructions = Platform.select({
-  ios     : 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
-  android : 'Double tap R on your keyboard to reload,\n' + 'Shake or press menu button for dev menu',
-});
-
-export default class App extends Component<{}> {
-  pressHandler = async internal => {
-    try {
-      const url = internal
-        ? 'https://www.keytradebank.be/node/backend/v1/keyhome/config/countries'
-        : 'https://www.test.w.keytradebank.be/node/backend/release-react-native/v1/keyhome/config/countries';
-      Alert.alert('Setup', `Ready to get ${url}`, [ { text: 'OK', onPress: () => console.log('OK Pressed') } ]);
-      const result = await Network.get(url);
-      Alert.alert('Response', internal ? result.data.join(' - ') : `${url} + ${result.data.join(' - ')}`, [ { text: 'OK', onPress: () => console.log('OK Pressed') } ]);
-    } catch (err) {
-      Alert.alert('ERROR', `There was an error during the network call: ${err.message}`, [ { text: 'OK', onPress: () => console.log('OK Pressed') } ]);
+export default class App extends Component {
+  constructor(props) {
+    super(props);
+    this.fl = null
+    this.state = {
+      callCount: 1,
+      logs: [
+        {key: '0', title: 'Initial log', message: 'This is the subtext'}
+      ]
     }
-  };
+  }
+
+  pressHandler = async test => {
+    const id = this.state.callCount
+    try {
+      const url = test
+        ? 'https://www.test.w.keytradebank.be/node/backend/v1/keyhome/config/countries'
+        : 'https://www.keytradebank.be/node/backend/v1/keyhome/config/countries'
+      this.addLog(`Started call - ${test ? 'TEST' : 'PROD'} - #${id}`, `Get ${url}`, true)
+      const result = await Network.get(url);
+      this.addLog(`Success call - ${test ? 'TEST' : 'PROD'} - #${id}`, `${result.data.join(' - ')}`, false)
+      console.log(result);
+    } catch (err) {
+      this.addLog(`Failed call - ${test ? 'TEST' : 'PROD'} - #${id}`, `${err.message}`, false)
+    }
+  }
+
+  addLog = (title, message, updateCount) => {
+    this.setState({logs: [...this.state.logs, {key: this.state.logs.length, title, message}], callCount: updateCount ? this.state.callCount + 1 : this.state.callCount},
+      () => {
+        this.fl.scrollToEnd()
+      })
+  }
+
+  truncate = (string, length=100) => {
+    if (string.length > length) return string.substring(0,length)+'...';
+    else return string;
+ }; 
+
   render() {
     return (
       <View style={styles.container}>
-        <Text style={styles.welcome}>Welcome to React Native!</Text>
-        <Text style={styles.instructions}>To get started, edit App.js</Text>
-        <Button onPress={() => this.pressHandler(false)} title='Press me for test call' />
-        <Text>{'\n'}</Text>
-        <Button onPress={() => this.pressHandler(true)} title='Press me for production call' />
+        <View style={styles.buttons}>
+          <Button onPress={() => this.pressHandler(true)} title='Test call' />
+          <Button onPress={() => this.pressHandler(false)} title='Production call' />
+        </View>
+        <FlatList
+          ref={fl => this.fl = fl}
+          style={styles.list}
+          data={this.state.logs}
+          ItemSeparatorComponent={() => <View style={styles.separator} />}
+          renderItem={({item}) => (
+            <View style={styles.row}>
+              <Text style={styles.title}>{item.title}</Text>
+              <Text style={styles.text}>{this.truncate(item.message)}</Text>
+            </View>
+          )}
+        />
       </View>
     );
   }
@@ -37,17 +69,36 @@ const styles = StyleSheet.create({
   container    : {
     flex            : 1,
     justifyContent  : 'center',
-    alignItems      : 'center',
     backgroundColor : '#F5FCFF',
   },
-  welcome      : {
-    fontSize  : 20,
-    textAlign : 'center',
-    margin    : 10,
+  buttons: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    paddingVertical: 10,
+    marginTop: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#D5DCDF'
   },
-  instructions : {
-    textAlign    : 'center',
-    color        : '#333333',
-    marginBottom : 5,
+  list: {
+    flex: 1,
+    backgroundColor: '#F1F8FC'
   },
+  row: {
+    paddingVertical: 10,
+    marginLeft: 16,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: 'bold'
+  },
+  text: {
+    color: '#777'
+  },
+  separator: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: '#00000050',
+    width: '100%',
+    marginLeft: 16
+  }
 });
