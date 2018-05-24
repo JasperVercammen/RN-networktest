@@ -18,7 +18,7 @@ export default class App extends Component {
     const id = this.state.callCount
     try {
       const url = test
-        ? 'https://www.test.w.keytradebank.be/node/backend/v1/keyhome/config/countries'
+        ? 'https://www.stage.w.keytradebank.be/node/backend/v1/keyhome/config/countries'
         : 'https://www.keytradebank.be/node/backend/v1/keyhome/config/countries'
       this.addLog(`Started call - ${test ? 'TEST' : 'PROD'} - #${id}`, `Get ${url}`, true)
       const result = await Network.get(url);
